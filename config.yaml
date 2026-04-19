@@ -1,0 +1,48 @@
+# Stroke classification pipeline configuration
+
+project:
+  name: "Stroke Classification Pipeline"
+  seed: 42
+
+data:
+  base_path: "dataset"
+  result_path: "results"
+  checkpoint_path: "checkpoints"
+  # Binary labels: index 0 = no stroke, index 1 = stroke (matches model logits)
+  classes:
+    No-Stroke: 0
+    Stroke: 1
+  image_size: 256
+  # Data preparation
+  cluster_count: 5
+  balancing_method: "smote"
+  augmentation: true
+
+training:
+  type: "cnn" # options: "cnn", "kd", "ensemble"
+  folds: ["Fold1", "Fold2", "Fold3"]
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.0001
+  device: "cuda"
+
+model:
+  name: "resnet50" # resnet18, resnet50, densenet121, densenet201, efficientnetb0, efficientnetb3, inceptionv3
+  num_classes: 2
+  pretrained: true
+
+kd_training:
+  teacher_model: "resnet50"
+  teacher_weights: "checkpoints/cnn/resnet50_best_model_Fold3.pth"
+  student_model: "resnet18"
+  alpha: 0.5
+  temperature: 4.0
+
+ensemble:
+  method: "soft_voting" # soft_voting, hard_voting
+  validation_mode: "internal" # options: "internal", "external"
+  internal_data_path: "dataset/Fold1/test"
+  external_data_path: "dataset/External_Dataset/head_ct"
+  weights:
+    resnet50: "checkpoints/cnn/resnet50_best_model_Fold1.pth"
+    efficientnetb0: "checkpoints/kd/kd_efficientnetb0_student_best_model_Fold1.pth"

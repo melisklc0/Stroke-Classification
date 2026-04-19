@@ -1,0 +1,29 @@
+wandb/
+
+# Python cache / bytecode
+__pycache__/
+*.pyc
+
+# Logs & run artifacts
+*.log
+
+# Dataset (Ham veri Git'e girmez, sadece klasör yapısı ve seçilmiş örnekler girer)
+dataset/**
+!dataset/samples/**
+!dataset/**/.gitkeep
+checkpoints/**
+!checkpoints/**/.gitkeep
+thesis/models
+thesis/legacy_codes
+*.pth
+*.pth.tar
+
+# Sonuclari (Metrik ve Grafikleri) Git'e dahil et
+!results/**
+results/**/*.log
+
+# Klasor iskeletini korumak icin .gitkeep dosyalarini takip et
+!**/.gitkeep
+
+# Local venv
+.venv/
