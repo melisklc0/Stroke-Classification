@@ -27,3 +27,4 @@ results/**/*.log
 
 # Local venv
 .venv/
+.env

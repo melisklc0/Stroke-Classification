@@ -69,6 +69,16 @@ uv venv
 uv pip install .
 ```
 
+#### 📦 Veri Seti İndirme (Hugging Face)
+
+Büyük boyutlu veri setleri ve resimler, GitHub deposunu hafif tutmak amacıyla **Hugging Face** üzerinde barındırılmaktadır. 
+
+Veri setini bilgisayarınıza indirmek için terminalinizden şu komutları çalıştırın (Size sorulduğunda Hugging Face Tokeninizi girin):
+```bash
+uv run python -c "from huggingface_hub import login; token=input('HuggingFace Token: '); login(token.strip())"
+uv run python run_pipeline.py --step pull_data
+```
+
 ### 2. Veri Seti Düzenleme Konfigürasyonları
 
 `--step data` komutu yerel veri yapınıza dinamik olarak uyum sağlar. Ham verinizin durumuna uygun olan senaryoyu seçebilirsiniz:

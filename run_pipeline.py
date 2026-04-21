@@ -9,6 +9,7 @@ from src.data_prep import create_folds, balance_test_set, augment_train_set
 from src.train_cnn import train_plain_cnn
 from src.train_kd import train_kd
 from src.ensemble_eval import run_ensemble
+from src.hf_dataset import push_dataset, pull_dataset
 
 
 def load_config(config_path="config.yaml"):
@@ -23,8 +24,8 @@ def main():
         "--step",
         type=str,
         required=True,
-        choices=["data", "train_cnn", "train_kd", "ensemble"],
-        help="Pipeline step: data, train_cnn, train_kd, or ensemble (run in order for a full experiment).",
+        choices=["data", "push_data", "pull_data", "train_cnn", "train_kd", "ensemble"],
+        help="Pipeline step: pull_data, data, train_cnn, train_kd, or ensemble.",
     )
     args = parser.parse_args()
 
@@ -50,6 +51,14 @@ def main():
             base_path, config["training"]["folds"], 7500, classes=class_names
         )
         print("Data preparation steps finished.")
+
+    elif args.step == "push_data":
+        print("\n--- [Step 0.1] Pushing dataset to Hugging Face ---")
+        push_dataset(config)
+
+    elif args.step == "pull_data":
+        print("\n--- [Step 0.2] Pulling dataset from Hugging Face ---")
+        pull_dataset(config)
 
     elif args.step == "train_cnn":
         print("\n--- [Step 2] Baseline CNN training ---")

@@ -70,6 +70,16 @@ uv venv
 uv pip install .
 ```
 
+#### 📦 Dataset Download (Hugging Face)
+
+Large datasets and images are hosted on **Hugging Face** to keep the GitHub repository lightweight and to ensure full reproducibility.
+
+To pull the data to your local machine, login and run the pull step (You will need your Hugging Face Token):
+```bash
+uv run python -c "from huggingface_hub import login; token=input('HuggingFace Token: '); login(token.strip())"
+uv run python run_pipeline.py --step pull_data
+```
+
 ### 2. Data Setup Configurations
 
 The `--step data` command dynamically adapts to your local data structure. Choose the scenario that matches your raw data:

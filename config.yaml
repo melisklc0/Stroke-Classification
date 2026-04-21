@@ -6,13 +6,14 @@ project:
 
 data:
   base_path: "dataset"
+  hf_repo_id: "melisklc0/stroke-classification"
   result_path: "results"
   checkpoint_path: "checkpoints"
   # Binary labels: index 0 = no stroke, index 1 = stroke (matches model logits)
   classes:
     No-Stroke: 0
     Stroke: 1
-  image_size: 256
+  image_size: 256 # Normal: 256, Inception: 299
   # Data preparation
   cluster_count: 5
   balancing_method: "smote"
@@ -32,8 +33,8 @@ model:
   pretrained: true
 
 kd_training:
-  teacher_model: "resnet50"
-  teacher_weights: "checkpoints/cnn/resnet50_best_model_Fold3.pth"
+  teacher_model: "inceptionv3"
+  teacher_weights: "checkpoints/cnn/inceptionv3/inception_best_model_Fold1.pth"
   student_model: "resnet18"
   alpha: 0.5
   temperature: 4.0
@@ -44,5 +45,9 @@ ensemble:
   internal_data_path: "dataset/Fold1/test"
   external_data_path: "dataset/External_Dataset/head_ct"
   weights:
-    resnet50: "checkpoints/cnn/resnet50_best_model_Fold1.pth"
-    efficientnetb0: "checkpoints/kd/kd_efficientnetb0_student_best_model_Fold1.pth"
+    resnet18: "checkpoints/kd/KD_Resnet18/kd_student2_resnet18_Fold1.pth"
+    resnet50: "checkpoints/kd/KD_Resnet50/kd_student2_resnet50_Fold1.pth"
+    densenet121: "checkpoints/kd/KD_Densenet121/kd_student2_densenet121_Fold1.pth"
+    densenet201: "checkpoints/kd/KD_Densenet201/kd_student2_densenet201_Fold1.pth"
+    efficientnetb0: "checkpoints/kd/KD_Efficientnet_b0/kd_efficientnet_b0_Fold1.pth"
+    efficientnetb3: "checkpoints/kd/KD_Efficientnet_b3/kd_efficientnet_b3_Fold1.pth"
