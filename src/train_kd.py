@@ -13,6 +13,7 @@ import os
 from .models import get_model
 from .train_cnn import StrokeDataset, evaluate_model
 from .evaluate import plot_metrics, save_metrics_to_file_txt, save_final_metrics_to_file, plot_confusion_matrix
+from .file_utils import get_unique_filename
 
 
 def knowledge_distillation_loss(student_outputs, teacher_outputs, labels, temperature, alpha):
@@ -84,6 +85,14 @@ def train_kd(config):
         print(f"\n--- [KD] Training {student_name} on {fold} ---")
         train_dir = os.path.join(base_path, fold, "train")
         test_dir = os.path.join(base_path, fold, "test")
+
+        # Determine unique paths for this fold run
+        fold_checkpoint_path = get_unique_filename(
+            os.path.join(checkpoint_path, f"{prefix}best_model_{fold}.pth")
+        )
+        fold_log_path = get_unique_filename(
+            os.path.join(result_path, f"{prefix}losses_{fold}.txt")
+        )
 
         train_dataset = StrokeDataset(train_dir, transform=transform, class_to_idx=class_to_idx)
         test_dataset = StrokeDataset(test_dir, transform=transform, class_to_idx=class_to_idx)
@@ -162,26 +171,23 @@ def train_kd(config):
             if epoch_test_acc > best_acc:
                 best_acc = epoch_test_acc
                 best_model_wts = copy.deepcopy(student_model.state_dict())
-                torch.save(
-                    student_model.state_dict(),
-                    os.path.join(checkpoint_path, f"{prefix}best_model_{fold}.pth"),
-                )
+                torch.save(student_model.state_dict(), fold_checkpoint_path)
 
             print(f"Epoch {epoch + 1} done, learning rate: {current_lr:.8f}")
             print(
                 f"Epoch {epoch + 1}: Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_acc:.4f}, "
                 f"Test Loss: {epoch_test_loss:.4f}, Test Acc: {epoch_test_acc:.4f}"
             )
-            save_metrics_to_file_txt(
-                fold,
-                epoch,
-                epoch_train_loss,
-                epoch_test_loss,
-                epoch_train_acc,
-                epoch_test_acc,
-                result_path,
-                prefix,
-            )
+            # Custom save to the pre-determined unique log path
+            with open(fold_log_path, "a") as file:
+                file.write(f"Epoch {epoch + 1}:\n")
+                file.write(
+                    f"Train Loss: {epoch_train_loss:.4f}, Train Accuracy: {epoch_train_acc:.4f}\n"
+                )
+                file.write(
+                    f"Test Loss: {epoch_test_loss:.4f}, Test Accuracy: {epoch_test_acc:.4f}\n"
+                )
+                file.write("=" * 50 + "\n")
 
         student_model.load_state_dict(best_model_wts)
         print(f"Best student weights for {fold} saved")

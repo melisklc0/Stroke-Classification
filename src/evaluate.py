@@ -4,6 +4,7 @@ Plotting and metric logging helpers (curves, confusion matrix, text summaries).
 import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from .file_utils import get_unique_filename
 
 
 def plot_metrics(
@@ -19,7 +20,7 @@ def plot_metrics(
     Plot and save training/testing loss and accuracy curves.
     """
     os.makedirs(save_dir, exist_ok=True)
-    file_path = os.path.join(save_dir, f"{prefix}{fold_name}.png")
+    file_path = get_unique_filename(os.path.join(save_dir, f"{prefix}{fold_name}.png"))
 
     plt.figure(figsize=(10, 6))
 
@@ -68,7 +69,7 @@ def save_final_metrics_to_file(fold_name, labels, preds, save_dir, prefix=""):
     Write aggregate test metrics to a text file and print them.
     """
     os.makedirs(save_dir, exist_ok=True)
-    file_path = os.path.join(save_dir, f"{prefix}metrics_{fold_name}.txt")
+    file_path = get_unique_filename(os.path.join(save_dir, f"{prefix}metrics_{fold_name}.txt"))
 
     acc = accuracy_score(labels, preds)
     precision = precision_score(labels, preds, average="weighted", zero_division=0)
@@ -118,7 +119,9 @@ def plot_confusion_matrix(
     plt.title(f"Confusion Matrix - {fold_name}")
 
     os.makedirs(save_dir, exist_ok=True)
-    cm_img_path = os.path.join(save_dir, f"{prefix}confusion_matrix_{fold_name}.png")
+    cm_img_path = get_unique_filename(
+        os.path.join(save_dir, f"{prefix}confusion_matrix_{fold_name}.png")
+    )
     plt.savefig(cm_img_path, bbox_inches="tight")
     plt.close()
     print(f"[{fold_name}] Confusion matrix saved to {cm_img_path}")

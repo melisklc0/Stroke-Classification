@@ -13,6 +13,7 @@ import os
 from .data_prep import create_folds
 from .models import get_model
 from .evaluate import plot_metrics, save_metrics_to_file_txt, save_final_metrics_to_file, plot_confusion_matrix
+from .file_utils import get_unique_filename
 
 
 class StrokeDataset(torch.utils.data.Dataset):
@@ -113,6 +114,14 @@ def train_plain_cnn(config):
         train_dir = os.path.join(config["data"]["base_path"], fold, "train")
         test_dir = os.path.join(config["data"]["base_path"], fold, "test")
 
+        # Determine unique paths for this fold run
+        fold_checkpoint_path = get_unique_filename(
+            os.path.join(checkpoint_path, f"{model_name}_best_model_{fold}.pth")
+        )
+        fold_log_path = get_unique_filename(
+            os.path.join(result_path, f"{prefix}losses_{fold}.txt")
+        )
+
         train_dataset = StrokeDataset(train_dir, transform=transform, class_to_idx=class_to_idx)
         test_dataset = StrokeDataset(test_dir, transform=transform, class_to_idx=class_to_idx)
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -180,21 +189,18 @@ def train_plain_cnn(config):
                 best_acc = epoch_test_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
                 # Persist best weights for this fold under checkpoints/cnn/<model_name>/
-                torch.save(
-                    best_model_wts,
-                    os.path.join(checkpoint_path, f"{model_name}_best_model_{fold}.pth"),
-                )
+                torch.save(best_model_wts, fold_checkpoint_path)
 
-            save_metrics_to_file_txt(
-                fold,
-                epoch,
-                epoch_train_loss,
-                epoch_test_loss,
-                epoch_train_acc,
-                epoch_test_acc,
-                result_path,
-                prefix,
-            )
+            # Custom save to the pre-determined unique log path
+            with open(fold_log_path, "a") as file:
+                file.write(f"Epoch {epoch + 1}:\n")
+                file.write(
+                    f"Train Loss: {epoch_train_loss:.4f}, Train Accuracy: {epoch_train_acc:.4f}\n"
+                )
+                file.write(
+                    f"Test Loss: {epoch_test_loss:.4f}, Test Accuracy: {epoch_test_acc:.4f}\n"
+                )
+                file.write("=" * 50 + "\n")
             print(
                 f"Epoch [{epoch + 1}/{epochs}], Train Loss: {epoch_train_loss:.4f}, "
                 f"Train Acc: {epoch_train_acc:.4f}, Test Loss: {epoch_test_loss:.4f}, "

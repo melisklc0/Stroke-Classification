@@ -18,9 +18,9 @@ thesis/legacy_codes
 *.pth
 *.pth.tar
 
-# Sonuclari (Metrik ve Grafikleri) Git'e dahil et
-!results/**
-results/**/*.log
+# Sonuclari (Metrik ve Grafikleri) Git'e dahil etme
+results/**
+!results/**/.gitkeep
 
 # Klasor iskeletini korumak icin .gitkeep dosyalarini takip et
 !**/.gitkeep
