@@ -9,7 +9,7 @@ from src.data_prep import create_folds, balance_test_set, augment_train_set
 from src.train_cnn import train_plain_cnn
 from src.train_kd import train_kd
 from src.ensemble_eval import run_ensemble
-from src.hf_dataset import push_dataset, pull_dataset
+from src.hf.dataset import pull_dataset, push_dataset
 
 
 def load_config(config_path="config.yaml"):
@@ -24,8 +24,22 @@ def main():
         "--step",
         type=str,
         required=True,
-        choices=["data", "push_data", "pull_data", "train_cnn", "train_kd", "ensemble"],
-        help="Pipeline step: pull_data, data, train_cnn, train_kd, or ensemble.",
+        choices=[
+            "data",
+            "push_data",
+            "pull_data",
+            "train_cnn",
+            "train_kd",
+            "ensemble",
+            "push_model",
+        ],
+        help="Pipeline step: pull_data, push_data, data, train_cnn, train_kd, ensemble or push_model.",
+    )
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        default=None,
+        help="Local .pth checkpoint for push_model.",
     )
     args = parser.parse_args()
 
@@ -53,11 +67,11 @@ def main():
         print("Data preparation steps finished.")
 
     elif args.step == "push_data":
-        print("\n--- [Step 0.1] Pushing dataset to Hugging Face ---")
+        print("\n--- [Hub] Pushing dataset to Hugging Face ---")
         push_dataset(config)
 
     elif args.step == "pull_data":
-        print("\n--- [Step 0.2] Pulling dataset from Hugging Face ---")
+        print("\n--- [Hub] Pulling dataset from Hugging Face ---")
         pull_dataset(config)
 
     elif args.step == "train_cnn":
@@ -99,6 +113,15 @@ def main():
                     model_weights=sample_weights,
                     output_prefix="ensemble_external",
                 )
+
+    elif args.step == "push_model":
+        print("\n--- [Hub] Push model checkpoint ---")
+        if not args.model_path:
+            print("ERROR: use --model_path path/to/checkpoint.pth")
+        else:
+            from src.hf.push import push_model
+
+            push_model(config, args.model_path)
 
     print("\n=== Done ===")
 

@@ -31,6 +31,8 @@ model:
   name: "resnet50" # resnet18, resnet50, densenet121, densenet201, efficientnetb0, efficientnetb3, inceptionv3
   num_classes: 2
   pretrained: true
+  # Hugging Face Model Hub repo name (without username; user comes from data.hf_repo_id)
+  hf_model_id: "efficientnet-b0-stroke-distilled"
 
 kd_training:
   teacher_model: "inceptionv3"
@@ -45,9 +47,9 @@ ensemble:
   internal_data_path: "dataset/Fold1/test"
   external_data_path: "dataset/External_Dataset/head_ct"
   weights:
-    resnet18: "checkpoints/kd/KD_Resnet18/kd_student2_resnet18_Fold1.pth"
-    resnet50: "checkpoints/kd/KD_Resnet50/kd_student2_resnet50_Fold1.pth"
-    densenet121: "checkpoints/kd/KD_Densenet121/kd_student2_densenet121_Fold1.pth"
-    densenet201: "checkpoints/kd/KD_Densenet201/kd_student2_densenet201_Fold1.pth"
+    #resnet18: "checkpoints/kd/KD_Resnet18/kd_student2_resnet18_Fold1.pth"
+    #resnet50: "checkpoints/kd/KD_Resnet50/kd_student2_resnet50_Fold1.pth"
+    #densenet121: "checkpoints/kd/KD_Densenet121/kd_student2_densenet121_Fold1.pth"
+    #densenet201: "checkpoints/kd/KD_Densenet201/kd_student2_densenet201_Fold1.pth"
     efficientnetb0: "checkpoints/kd/KD_Efficientnet_b0/kd_efficientnet_b0_Fold1.pth"
-    efficientnetb3: "checkpoints/kd/KD_Efficientnet_b3/kd_efficientnet_b3_Fold1.pth"
+    #efficientnetb3: "checkpoints/kd/KD_Efficientnet_b3/kd_efficientnet_b3_Fold1.pth"
