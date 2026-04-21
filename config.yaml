@@ -13,7 +13,7 @@ data:
   classes:
     No-Stroke: 0
     Stroke: 1
-  image_size: 256 # Normal: 256, Inception: 299
+  image_size: 299 # Normal: 256, Inception/Legacy: 299
   # Data preparation
   cluster_count: 5
   balancing_method: "smote"

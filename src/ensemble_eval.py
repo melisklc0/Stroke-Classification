@@ -50,7 +50,12 @@ def run_ensemble(config, data_path: str, model_weights: dict, output_prefix: str
             continue
 
         model = get_model(model_name, pretrained=False, num_classes=config["model"]["num_classes"])
-        model.load_state_dict(torch.load(weight_path, map_location=device), strict=False)
+        state_dict = torch.load(weight_path, map_location=device)
+        # Handle legacy 'model.' prefix
+        if any(k.startswith("model.") for k in state_dict.keys()):
+            state_dict = {k.replace("model.", ""): v for k, v in state_dict.items()}
+
+        model.load_state_dict(state_dict, strict=True)
         model = model.to(device)
         model.eval()
         loaded_models.append(model)

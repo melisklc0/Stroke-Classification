@@ -5,12 +5,11 @@ import torch.nn as nn
 from torchvision import models
 
 
-class StrokeHead(nn.Module):
-    """Two-layer 256-unit classifier head for binary (or N-class) stroke logits."""
+class StrokeHead(nn.Sequential):
+    """Two-layer 256-unit classifier head."""
 
     def __init__(self, in_features, num_classes=2):
-        super().__init__()
-        self.fc = nn.Sequential(
+        super().__init__(
             nn.Linear(in_features, 256),
             nn.ReLU(),
             nn.Linear(256, 256),
@@ -18,13 +17,10 @@ class StrokeHead(nn.Module):
             nn.Linear(256, num_classes),
         )
 
-    def forward(self, x):
-        return self.fc(x)
-
 
 def get_model(model_name: str, pretrained: bool = True, num_classes: int = 2) -> nn.Module:
     """
-    Build a torchvision backbone with the custom StrokeHead (256-256) classifier.
+    Build the model architecture (standard torchvision backbones with custom head).
     """
     model_name = model_name.lower()
 
@@ -50,12 +46,14 @@ def get_model(model_name: str, pretrained: bool = True, num_classes: int = 2) ->
 
     elif model_name == "efficientnetb0":
         model = models.efficientnet_b0(pretrained=pretrained)
-        model.classifier[1] = StrokeHead(model.classifier[1].in_features, num_classes)
+        in_features = model.classifier[1].in_features
+        model.classifier = StrokeHead(in_features, num_classes)
         return model
 
     elif model_name == "efficientnetb3":
         model = models.efficientnet_b3(pretrained=pretrained)
-        model.classifier[1] = StrokeHead(model.classifier[1].in_features, num_classes)
+        in_features = model.classifier[1].in_features
+        model.classifier = StrokeHead(in_features, num_classes)
         return model
 
     elif model_name == "inceptionv3":

@@ -69,10 +69,14 @@ def train_kd(config):
 
     print("Loading teacher model...")
     teacher_model = get_model(teacher_name, pretrained=False, num_classes=config["model"]["num_classes"])
-    # Strict false in case of aux logits differences between teacher and student
-    teacher_model.load_state_dict(
-        torch.load(teacher_weights_path, map_location=device), strict=False
-    )
+    teacher_state_dict = torch.load(teacher_weights_path, map_location=device)
+    # Handle 'model.' prefix if present
+    if any(k.startswith("model.") for k in teacher_state_dict.keys()):
+        teacher_state_dict = {
+            k.replace("model.", ""): v for k, v in teacher_state_dict.items()
+        }
+
+    teacher_model.load_state_dict(teacher_state_dict, strict=False)
     teacher_model = teacher_model.to(device)
     teacher_model.eval()
 
