@@ -1,4 +1,4 @@
-"""Upload normalized ``model.pth``, ``load_model.py``, ``model_config.json``, and README to HF Model Hub."""
+"""Upload to HF Model Hub: full bundle (``model.pth``, ``load_model.py``, ``model_config.json``, README) and/or ``model.onnx`` only."""
 
 from __future__ import annotations
 
@@ -12,9 +12,19 @@ from huggingface_hub import HfApi
 from src.hf.checkpoint import prepare_hub_checkpoint
 
 
-def push_model(config: dict, weight_path: str) -> None:
-    if not os.path.isfile(weight_path):
+def push_model(
+    config: dict,
+    weight_path: str | None = None,
+    onnx_path: str | None = None,
+) -> None:
+    if not weight_path and not onnx_path:
+        print("ERROR: provide weight_path and/or onnx_path.")
+        return
+    if weight_path and not os.path.isfile(weight_path):
         print(f"ERROR: checkpoint not found: {weight_path}")
+        return
+    if onnx_path and not os.path.isfile(onnx_path):
+        print(f"ERROR: ONNX file not found: {onnx_path}")
         return
 
     hf_user = config["data"]["hf_repo_id"].split("/")[0]
@@ -33,6 +43,21 @@ def push_model(config: dict, weight_path: str) -> None:
     except Exception as e:
         print(f"Note: create_repo: {e}")
 
+    if not weight_path:
+        print(f"Uploading ONNX only to https://huggingface.co/{repo_id}")
+        try:
+            api.upload_file(
+                path_or_fileobj=onnx_path,
+                path_in_repo="model.onnx",
+                repo_id=repo_id,
+                repo_type="model",
+            )
+            print("Uploaded model.onnx")
+            print(f"Done: https://huggingface.co/{repo_id}")
+        except Exception as e:
+            print(f"ERROR: {e}")
+        return
+
     state = prepare_hub_checkpoint(weight_path)
     fd, tmp_pth = tempfile.mkstemp(suffix=".pth")
     os.close(fd)
@@ -45,6 +70,7 @@ def push_model(config: dict, weight_path: str) -> None:
         "image_size": img_size,
         "class_indices": classes,
         "weights_file": "model.pth",
+        "onnx_file": "model.onnx",
     }
     fd2, tmp_cfg = tempfile.mkstemp(suffix=".json")
     os.close(fd2)
@@ -73,10 +99,11 @@ Distilled EfficientNet-B0 for binary **No-Stroke / Stroke** logits on head CT–
 | File | Role |
 |------|------|
 | `model.pth` | PyTorch state dict (canonical keys) |
+| `model.onnx` | ONNX opset 18 (optional; for ONNX Runtime / Spaces) |
 | `load_model.py` | Architecture + `load_model(repo_id)` |
 | `model_config.json` | Input size and class indices |
 
-Input: RGB, **{img_size}×{img_size}**, ImageNet normalization.
+Input: RGB, **{img_size}×{img_size}**, ImageNet normalization. ONNX input name: `input`, shape `(N,3,{img_size},{img_size})`.
 
 ## Install
 
@@ -121,6 +148,14 @@ print(predict_proba(m, tfm, Image.open("image.png")))
         api.upload_file(path_or_fileobj=loader_src, path_in_repo="load_model.py", repo_id=repo_id, repo_type="model")
         api.upload_file(path_or_fileobj=tmp_cfg, path_in_repo="model_config.json", repo_id=repo_id, repo_type="model")
         api.upload_file(path_or_fileobj=readme_path.name, path_in_repo="README.md", repo_id=repo_id, repo_type="model")
+        if onnx_path:
+            api.upload_file(
+                path_or_fileobj=onnx_path,
+                path_in_repo="model.onnx",
+                repo_id=repo_id,
+                repo_type="model",
+            )
+            print("Uploaded model.onnx")
         print(f"Done: https://huggingface.co/{repo_id}")
     except Exception as e:
         print(f"ERROR: {e}")

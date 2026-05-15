@@ -2,8 +2,10 @@
 CLI entrypoint: run a single pipeline step (data prep, CNN, KD, or ensemble)
 as defined in config.yaml.
 """
-import yaml
 import argparse
+import os
+
+import yaml
 
 from src.data_prep import create_folds, balance_test_set, augment_train_set
 from src.train_cnn import train_plain_cnn
@@ -31,15 +33,22 @@ def main():
             "train_cnn",
             "train_kd",
             "ensemble",
+            "export_onnx",
             "push_model",
         ],
-        help="Pipeline step: pull_data, push_data, data, train_cnn, train_kd, ensemble or push_model.",
+        help="Pipeline step: data, train_*, ensemble, export_onnx, push_model, push/pull_data.",
     )
     parser.add_argument(
         "--model_path",
         type=str,
         default=None,
-        help="Local .pth checkpoint for push_model.",
+        help="Local .pth for full Hub push; omit if pushing --onnx_path only.",
+    )
+    parser.add_argument(
+        "--onnx_path",
+        type=str,
+        default=None,
+        help="export_onnx: output path (default: <result_path>/model.onnx). push_model: upload model.onnx (can be used alone).",
     )
     args = parser.parse_args()
 
@@ -114,14 +123,29 @@ def main():
                     output_prefix="ensemble_external",
                 )
 
-    elif args.step == "push_model":
-        print("\n--- [Hub] Push model checkpoint ---")
+    elif args.step == "export_onnx":
+        print("\n--- [Export] PyTorch -> ONNX ---")
         if not args.model_path:
             print("ERROR: use --model_path path/to/checkpoint.pth")
         else:
+            from src.hf.export_onnx import export_to_onnx
+
+            default_onnx = os.path.join(
+                config["data"].get("result_path", "results"), "model.onnx"
+            )
+            out = args.onnx_path or default_onnx
+            export_to_onnx(args.model_path, out)
+
+    elif args.step == "push_model":
+        print("\n--- [Hub] Push model checkpoint ---")
+        if not args.model_path and not args.onnx_path:
+            print(
+                "ERROR: use --model_path for full push, or --onnx_path alone to add/replace model.onnx only."
+            )
+        else:
             from src.hf.push import push_model
 
-            push_model(config, args.model_path)
+            push_model(config, args.model_path, onnx_path=args.onnx_path)
 
     print("\n=== Done ===")
 

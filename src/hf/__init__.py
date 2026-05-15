@@ -1,1 +1,1 @@
-"""Hugging Face Hub: dataset (`dataset`), model push (`push`), inference stub (`hub_load_model`)."""
+"""Hugging Face Hub: dataset, model push, ONNX export, inference stub (`hub_load_model`)."""
