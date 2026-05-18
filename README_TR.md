@@ -1,13 +1,48 @@
 # Derin Öğrenme ve Bilgi Damıtımı (Knowledge Distillation) ile İnme (Stroke) Sınıflandırma Sistemi
 
+[![Canlı Demo](https://img.shields.io/badge/🤗%20Canlı_Demo-Hemen_dene-blue?style=for-the-badge)](https://huggingface.co/spaces/melisklc0/stroke-classification)
+[![Model](https://img.shields.io/badge/🤗%20Model-EfficientNet--B0-yellow)](https://huggingface.co/melisklc0/efficientnet-b0-stroke-distilled)
+[![Veri Seti](https://img.shields.io/badge/🤗%20Veri_Seti-3_fold-green)](https://huggingface.co/datasets/melisklc0/stroke-classification)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Veri_Seti-green)](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct)
+
 **Proje Türü:** Lisans Bitirme Projesi & Modüler Veri Bilimi Portfolyosu  
-📄 **[Bitirme Projesi Tez Raporu (PDF)](thesis/Stroke_Classification_Thesis_Report.pdf)**
+📄 **[Bitirme Projesi Tez Raporu (PDF)](thesis/Stroke_Classification_Thesis_Report.pdf)**  
+📖 **[English README](README.md)**
+
+---
+
+## 🎯 Demoyu deneyin
+
+Beyin BT görüntüsü yükleyin; tarayıcıdan **İnme / İnme Yok** tahminlerini ve olasılıkları görün.
+
+### 👉 [**Hugging Face’te canlı demo →**](https://huggingface.co/spaces/melisklc0/stroke-classification)
+
+Arayüz **Streamlit** ile yazıldı; arkada bilgi damıtmasıyla eğitilmiş **EfficientNet-B0** çalışıyor (doğrulama setimizde ~%98 F1). Makineye kurulum veya GPU gerekmez.
+
+> **Not:** Bu uygulama yalnızca araştırma ve portfolyo amaçlıdır; tanı veya tedavi kararı için kullanılamaz.
+
+---
+
+## 📦 Veri, model ve demo
+
+Kod bu repoda; ağır dosyalar Hugging Face ve Kaggle’da:
+
+| Kaynak | İçerik | Bağlantı |
+| --- | --- | --- |
+| **Canlı demo** | Streamlit — BT yükle, sınıf olasılıklarını gör | [Space](https://huggingface.co/spaces/melisklc0/stroke-classification) |
+| **Model** | Damıtılmış EfficientNet-B0 (`model.pth`, `load_model.py`) | [Hub](https://huggingface.co/melisklc0/efficientnet-b0-stroke-distilled) |
+| **Veri seti** | ~15 bin görüntü, 3 fold + harici test bölümü (~3 GB) | [Hugging Face](https://huggingface.co/datasets/melisklc0/stroke-classification) |
+| **Veri seti (Kaggle)** | Aynı içerik | [Kaggle](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct) |
+
+---
 
 ## 🚀 Proje Özeti
 
 Bu proje, bilgisayarlı tomografi (BT) taramalarından inme teşhisini hızlandırmak amacıyla tasarlanmış, yüksek düzeyde optimize edilmiş ve uçtan uca çalışan bir makine öğrenmesi boru hattı (pipeline) sunmaktadır. **Bilgi Damıtma (Knowledge Distillation - KD)** ve **Topluluk Öğrenme (Ensemble Learning)** yöntemlerini sentezleyerek, yüksek hesaplama gücü gerektiren karmaşık bir modelin bilgi birikimi, donanım dostu ve yüksek doğruluklu bir teşhis aracına başarıyla sıkıştırılmıştır.
 
 Sistem, geleneksel tanı gecikmelerini ortadan kaldırarak hızlı bir **Klinik Karar Destek Sistemine** dönüşmekte; hafif mimarili "öğrenci" modellerin donanım (CPU/GPU) maliyetlerini ciddi oranda düşürürken, kendi karmaşık "öğretmen" modellerini performansta geride bırakabileceğini kanıtlamaktadır.
+
+Eğitim kodu bu repoda; veri seti, model ve Streamlit demo için yukarıdaki tabloya bakın.
 
 ## 🛠 Tech Stack ve Metodolojiler
 
@@ -32,9 +67,10 @@ Sistem, geleneksel tanı gecikmelerini ortadan kaldırarak hızlı bir **Klinik 
 ## 🔬 Mimari ve Veri Akışı (Data Pipeline)
 
 ### 1. Veri Mühendisliği ve Ön İşleme
-* **Kaynaklar:** 
+* **Ham kaynaklar:** 
   * Ana Veri Seti: [T.C. Sağlık Bakanlığı Açık Veri Portalı](https://acikveri.saglik.gov.tr/Home/DataSetDetail/1)
   * Harici Test Seti (External Validation): [Kaggle Head CT Hemorrhage](https://www.kaggle.com/datasets/felipekitamura/head-ct-hemorrhage)
+* **İşlenmiş veri seti:** 3 fold, artırılmış (~15 bin görüntü); Hugging Face ve Kaggle’da (yukarıdaki tablo).
 * **Sınıf Birleştirme:** Ham veri seti başlangıçta "İnme Yok", "Kanama (Bleeding)" ve "İskemi (Ischemia)" sınıflarını içermekteydi. Acil durum triyaj süreçlerini optimize etmek amacıyla "Kanama" ve "İskemi" sınıfları, ikili sınıflandırma (İnme Var / İnme Yok) hedefi doğrultusunda tek bir **"İnme (Stroke)"** sınıfı altında birleştirilmiştir.
 * **Aşırı Öğrenmeyi (Overfitting) Önleme:** Sağlam bir öznitelik çıkarımı sağlamak için veri seti; döndürme ($\pm10^\circ$), yakınlaştırma ve yatay çevirme işlemleriyle 15.000 normalize tensör görüntüsüne çıkarılmıştır. Testler 3-Fold Çapraz Doğrulama (CV) stratejisiyle yürütülmüştür.
 
@@ -69,11 +105,10 @@ uv venv
 uv pip install .
 ```
 
-#### 📦 Veri Seti İndirme (Hugging Face)
+#### 📦 Veri seti indirme
 
-Büyük boyutlu veri setleri ve resimler, GitHub deposunu hafif tutmak amacıyla **Hugging Face** üzerinde barındırılmaktadır. 
+Hugging Face’e giriş yapın; yayınlanan veri setini (~3 GB) `dataset/` altına çekmek için:
 
-Veri setini bilgisayarınıza indirmek için terminalinizden şu komutları çalıştırın (Size sorulduğunda Hugging Face Tokeninizi girin):
 ```bash
 uv run python -c "from huggingface_hub import login; token=input('HuggingFace Token: '); login(token.strip())"
 uv run python run_pipeline.py --step pull_data
@@ -141,4 +176,4 @@ uv run python run_pipeline.py --step ensemble
 >
 >   - **Metrikler ve Grafikler:** `results/cnn/`, `results/kd/` veya `results/ensemble/` klasörlerine otomatik olarak kaydedilir. Bu çıktılar; Confusion Matrix (Karmaşıklık Matrisi/Isı Haritası), Eğitim Kayıp (Loss) eğrileri ve (F1, Recall vb.) tüm sınıflandırma raporlarının PNG ve TXT formatlarını içerir.
 >   - **Orijinal Tez Sonuçları:** `thesis/results/` dizininde arşivlenmiştir.
->   - **Model Ağırlıkları (.pth):** Kontrol noktaları (checkpoints) güvenli bir şekilde `checkpoints/` klasörüne kaydedilir, ancak deponun boyutunu şişirmemek adına `.gitignore` dosyasına eklenmiştir.
+>   - **Model Ağırlıkları (.pth):** Kontrol noktaları (checkpoints) güvenli bir şekilde `checkpoints/` klasörüne kaydedilir.

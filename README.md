@@ -1,14 +1,48 @@
 # Stroke Classification System via Knowledge Distillation & Deep Learning
 
+[![Live Demo](https://img.shields.io/badge/🤗%20Live_Demo-Try_it_now-blue?style=for-the-badge)](https://huggingface.co/spaces/melisklc0/stroke-classification)
+[![Model](https://img.shields.io/badge/🤗%20Model-EfficientNet--B0-yellow)](https://huggingface.co/melisklc0/efficientnet-b0-stroke-distilled)
+[![Dataset](https://img.shields.io/badge/🤗%20Dataset-3k%20folds-green)](https://huggingface.co/datasets/melisklc0/stroke-classification)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Dataset-green)](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct)
+
 **Project Type:** Capstone Project & Modular Data Science Portfolio  
 📄 **[Read the Full Thesis Report (PDF) - TR](thesis/Stroke_Classification_Thesis_Report.pdf)**  
-📖 **[Türkçe için tıklayın](README_TR.md)** - Turkish README (data layout, pipeline, results). *Türkçe özet ve kurulum için bu bağlantıyı kullanın.*
+📖 **[Türkçe için tıklayın](README_TR.md)** — Turkish README (data layout, pipeline, results).
+
+---
+
+## 🎯 Try the live demo (no install)
+
+**Upload a head CT scan and see Stroke vs. No-Stroke predictions in your browser — takes about 30 seconds.**
+
+### 👉 [**Launch Live Demo on Hugging Face →**](https://huggingface.co/spaces/melisklc0/stroke-classification)
+
+**Streamlit** interface backed by the distilled **EfficientNet-B0** student model (~98% F1 on our validation protocol). No local setup or GPU required.
+
+> **Disclaimer:** Research and portfolio demo only — **not for clinical use** or medical decision-making.
+
+---
+
+## 📦 Published artifacts
+
+Everything needed to reproduce, extend, or demo the project is hosted outside GitHub:
+
+| Resource | What you get | Link |
+| -------- | ------------ | ---- |
+| **Live demo** | Streamlit app — upload CT, view probabilities | [Hugging Face Space](https://huggingface.co/spaces/melisklc0/stroke-classification) |
+| **Model weights** | KD EfficientNet-B0 (`model.pth`, `load_model.py`) | [melisklc0/efficientnet-b0-stroke-distilled](https://huggingface.co/melisklc0/efficientnet-b0-stroke-distilled) |
+| **Dataset** | 15k augmented folds + external test split (~3 GB) | [Hugging Face Dataset](https://huggingface.co/datasets/melisklc0/stroke-classification) |
+| **Dataset (mirror)** | Same data on Kaggle | [Kaggle Dataset](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct) |
+
+---
 
 ## 🚀 Executive Summary
 
 This project delivers a highly optimized, end-to-end Machine Learning pipeline designed to accelerate the diagnosis of strokes from CT scans. By synthesizing **Knowledge Distillation (KD)** and **Ensemble Learning**, we successfully compressed a computationally heavy state-of-the-art model into a lightweight, highly accurate diagnostic tool.
 
 The system transitions traditional diagnostic delays into a rapid **Clinical Decision Support System**, demonstrating that lightweight student models can outperform their complex teachers while significantly reducing hardware (CPU/GPU) constraints.
+
+Training code is in this repo; the dataset, distilled model, and Streamlit demo are linked in the table above.
 
 ## 🛠 Tech Stack & Methodologies
 
@@ -33,9 +67,10 @@ The system transitions traditional diagnostic delays into a rapid **Clinical Dec
 ## 🔬 Architecture & Data Pipeline
 
 ### 1. Data Engineering & Preprocessing
-* **Sources:** 
+* **Sources (raw):** 
   * Primary Dataset: [Open Data Portal of the Turkish Ministry of Health](https://acikveri.saglik.gov.tr/Home/DataSetDetail/1)
   * External Validation: [Kaggle Head CT Hemorrhage Dataset](https://www.kaggle.com/datasets/felipekitamura/head-ct-hemorrhage)
+* **Processed dataset:** 3-fold augmented splits (~15k images), published on Hugging Face and Kaggle (see table above).
 * **Class Unification:** The raw dataset originally contained "No Stroke", "Bleeding", and "Ischemia" classes. To optimize for emergency triage, "Bleeding" and "Ischemia" were computationally merged into a unified **"Stroke"** class for binary classification.
 * **Mitigating Overfitting:** Augmented the dataset to 15,000 normalized tensor images via rotations, zoom shifts, and horizontal flips to ensure robust feature extraction. Cross-validated using a 3-Fold CV strategy.
 
@@ -70,15 +105,16 @@ uv venv
 uv pip install .
 ```
 
-#### 📦 Dataset Download (Hugging Face)
+#### 📦 Dataset download
 
-Large datasets and images are hosted on **Hugging Face** to keep the GitHub repository lightweight and to ensure full reproducibility.
+Log in to Hugging Face, then pull the published dataset (~3 GB) into `dataset/`:
 
-To pull the data to your local machine, login and run the pull step (You will need your Hugging Face Token):
 ```bash
 uv run python -c "from huggingface_hub import login; token=input('HuggingFace Token: '); login(token.strip())"
 uv run python run_pipeline.py --step pull_data
 ```
+
+For inference without training, use the published model or Streamlit demo (table above).
 
 ### 2. Data Setup Configurations
 
@@ -141,4 +177,4 @@ uv run python run_pipeline.py --step ensemble
 >
 >   - **Metrics & Plots:** Automatically saved to `results/cnn/`, `results/kd/`, or `results/ensemble/`. This includes Confusion Matrices (Heatmaps), Training Loss curves, and full classification reports (F1, Recall) in both PNG and TXT formats.
 >   - **Original Thesis Results:** Archived in the `thesis/results/` directory.
->   - **Model Weights (.pth):** Checkpoints are securely saved to `checkpoints/` but are `.gitignore`d to maintain repository health.
+>   - **Model Weights (.pth):** Checkpoints are securely saved to `checkpoints/`
