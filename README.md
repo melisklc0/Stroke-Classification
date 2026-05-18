@@ -31,8 +31,8 @@ Everything needed to reproduce, extend, or demo the project is hosted outside Gi
 | -------- | ------------ | ---- |
 | **Live demo** | Streamlit app — upload CT, view probabilities | [Hugging Face Space](https://huggingface.co/spaces/melisklc0/stroke-classification) |
 | **Model weights** | KD EfficientNet-B0 (`model.pth`, `load_model.py`) | [melisklc0/efficientnet-b0-stroke-distilled](https://huggingface.co/melisklc0/efficientnet-b0-stroke-distilled) |
-| **Dataset** | 15k augmented folds + external test split (~3 GB) | [Hugging Face Dataset](https://huggingface.co/datasets/melisklc0/stroke-classification) |
-| **Dataset (mirror)** | Same data on Kaggle | [Kaggle Dataset](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct) |
+| **Dataset** | 3-fold CV (~16.5k images/fold, ~49.5k) + external split; **~3 GB total** | [Hugging Face Dataset](https://huggingface.co/datasets/melisklc0/stroke-classification) |
+| **Dataset (mirror)** | Fold1–Fold3 only | [Kaggle Dataset](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct) |
 
 ---
 
@@ -70,7 +70,7 @@ Training code is in this repo; the dataset, distilled model, and Streamlit demo 
 * **Sources (raw):** 
   * Primary Dataset: [Open Data Portal of the Turkish Ministry of Health](https://acikveri.saglik.gov.tr/Home/DataSetDetail/1)
   * External Validation: [Kaggle Head CT Hemorrhage Dataset](https://www.kaggle.com/datasets/felipekitamura/head-ct-hemorrhage)
-* **Processed dataset:** 3-fold augmented splits (~15k images), published on Hugging Face and Kaggle (see table above).
+* **Processed dataset:** 3-fold augmented splits (~**16.5k images per fold**, ~**49.5k** files across folds on disk). **~3 GB total** published on Hugging Face and Kaggle (see table above).
 * **Class Unification:** The raw dataset originally contained "No Stroke", "Bleeding", and "Ischemia" classes. To optimize for emergency triage, "Bleeding" and "Ischemia" were computationally merged into a unified **"Stroke"** class for binary classification.
 * **Mitigating Overfitting:** Augmented the dataset to 15,000 normalized tensor images via rotations, zoom shifts, and horizontal flips to ensure robust feature extraction. Cross-validated using a 3-Fold CV strategy.
 
@@ -107,7 +107,7 @@ uv pip install .
 
 #### 📦 Dataset download
 
-Log in to Hugging Face, then pull the published dataset (~3 GB) into `dataset/`:
+Log in to Hugging Face, then pull the full published dataset into `dataset/`:
 
 ```bash
 uv run python -c "from huggingface_hub import login; token=input('HuggingFace Token: '); login(token.strip())"

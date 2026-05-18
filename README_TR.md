@@ -31,8 +31,8 @@ Kod bu repoda; ağır dosyalar Hugging Face ve Kaggle’da:
 | --- | --- | --- |
 | **Canlı demo** | Streamlit — BT yükle, sınıf olasılıklarını gör | [Space](https://huggingface.co/spaces/melisklc0/stroke-classification) |
 | **Model** | Damıtılmış EfficientNet-B0 (`model.pth`, `load_model.py`) | [Hub](https://huggingface.co/melisklc0/efficientnet-b0-stroke-distilled) |
-| **Veri seti** | ~15 bin görüntü, 3 fold + harici test bölümü (~3 GB) | [Hugging Face](https://huggingface.co/datasets/melisklc0/stroke-classification) |
-| **Veri seti (Kaggle)** | Aynı içerik | [Kaggle](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct) |
+| **Veri seti** | 3 fold (~16,5 bin/fold, ~49,5 bin) + harici bölüm; **toplam ~3 GB** | [Hugging Face](https://huggingface.co/datasets/melisklc0/stroke-classification) |
+| **Veri seti (Kaggle)** | Yalnızca Fold1–Fold3 | [Kaggle](https://www.kaggle.com/datasets/melisklc0/stroke-classification-brain-ct) |
 
 ---
 
@@ -70,7 +70,7 @@ Eğitim kodu bu repoda; veri seti, model ve Streamlit demo için yukarıdaki tab
 * **Ham kaynaklar:** 
   * Ana Veri Seti: [T.C. Sağlık Bakanlığı Açık Veri Portalı](https://acikveri.saglik.gov.tr/Home/DataSetDetail/1)
   * Harici Test Seti (External Validation): [Kaggle Head CT Hemorrhage](https://www.kaggle.com/datasets/felipekitamura/head-ct-hemorrhage)
-* **İşlenmiş veri seti:** 3 fold, artırılmış (~15 bin görüntü); Hugging Face ve Kaggle’da (yukarıdaki tablo).
+* **İşlenmiş veri seti:** 3 fold, artırılmış (fold başına ~16,5 bin, diskte fold’lar arası ~49,5 bin dosya). **Toplam indirme ~3 GB** Hugging Face ve Kaggle’da (yukarıdaki tablo).
 * **Sınıf Birleştirme:** Ham veri seti başlangıçta "İnme Yok", "Kanama (Bleeding)" ve "İskemi (Ischemia)" sınıflarını içermekteydi. Acil durum triyaj süreçlerini optimize etmek amacıyla "Kanama" ve "İskemi" sınıfları, ikili sınıflandırma (İnme Var / İnme Yok) hedefi doğrultusunda tek bir **"İnme (Stroke)"** sınıfı altında birleştirilmiştir.
 * **Aşırı Öğrenmeyi (Overfitting) Önleme:** Sağlam bir öznitelik çıkarımı sağlamak için veri seti; döndürme ($\pm10^\circ$), yakınlaştırma ve yatay çevirme işlemleriyle 15.000 normalize tensör görüntüsüne çıkarılmıştır. Testler 3-Fold Çapraz Doğrulama (CV) stratejisiyle yürütülmüştür.
 
@@ -107,7 +107,7 @@ uv pip install .
 
 #### 📦 Veri seti indirme
 
-Hugging Face’e giriş yapın; yayınlanan veri setini (~3 GB) `dataset/` altına çekmek için:
+Hugging Face’e giriş yapın; tüm veri setini `dataset/` altına çekmek için:
 
 ```bash
 uv run python -c "from huggingface_hub import login; token=input('HuggingFace Token: '); login(token.strip())"
