@@ -1,0 +1,28 @@
+# Builds and pushes the serving image. Run with `make release`.
+# BuildKit must stay on: the Dockerfile uses a uv cache mount.
+
+substitutions:
+  _REGION: europe-west1
+  _REPOSITORY: stroke-api
+  _IMAGE: stroke-api
+  _TAG: latest
+
+options:
+  env:
+    - DOCKER_BUILDKIT=1
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:${_TAG}
+      - --tag
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:latest
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:${_TAG}
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:latest

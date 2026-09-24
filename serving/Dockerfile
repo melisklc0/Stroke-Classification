@@ -1,3 +1,6 @@
+# Stroke serving image — FastAPI + ONNX Runtime inference API.
+# Needs BuildKit for the uv cache mount: `make build` locally, `make release` for Cloud Build.
+#
 # ==========================================
 # Builder Stage
 # ==========================================
@@ -13,7 +16,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-install-project
 
 # Bake the ONNX file in: a cold start must not depend on the Hub being up.
