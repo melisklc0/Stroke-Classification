@@ -14,9 +14,19 @@ dependencies = [
     "huggingface-hub>=0.26.0",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "httpx2>=0.1.0",
+]
+
 [tool.uv]
 # Flat app modules, nothing to install as a package.
 package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
