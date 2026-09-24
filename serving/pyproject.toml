@@ -1,0 +1,35 @@
+[project]
+name = "stroke-serving"
+version = "0.1.0"
+description = "ONNX inference API for the distilled stroke classifier"
+requires-python = ">=3.13"
+# Deliberately independent of the training project: no torch, no CUDA index.
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "python-multipart>=0.0.20",
+    "onnxruntime>=1.20.0",
+    "pillow>=10.0.0",
+    "numpy>=2.0.0",
+    "huggingface-hub>=0.26.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "httpx2>=0.1.0",
+]
+
+[tool.uv]
+# Flat app modules, nothing to install as a package.
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint.isort]
+known-first-party = ["model_utils"]
