@@ -1,0 +1,5 @@
+# Keep container and shell entrypoints LF: CRLF breaks them inside Linux images.
+*.sh text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+.gcloudignore text eol=lf
