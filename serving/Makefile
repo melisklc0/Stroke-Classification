@@ -1,9 +1,11 @@
-.PHONY: install lint test build run smoke release clean
+.PHONY: install lint test build run smoke release url invoke logs clean
 
 # Run from WSL: the Docker daemon lives there, not on the Windows host.
 
 TAG ?= $(shell git rev-parse --short HEAD)
 PROJECT ?= stoke-serving
+REGION ?= europe-west1
+SERVICE ?= stroke-api
 
 install:  ## sync deps + dev group
 	uv sync
@@ -24,8 +26,19 @@ run:  ## run the local image on :8080 (Swagger UI at /docs)
 smoke:  ## start the built image and assert /healthz + both sample scans
 	bash scripts/smoke_test.sh
 
-release:  ## build and push through Cloud Build, tagged with the current commit
-	gcloud builds submit . --config cloudbuild.yaml --project $(PROJECT) --substitutions=_TAG=$(TAG)
+release:  ## build, push and deploy through Cloud Build, tagged with the current commit
+	gcloud builds submit . --config cloudbuild.yaml --project $(PROJECT) \
+	  --substitutions=_TAG=$(TAG),_REGION=$(REGION),_SERVICE=$(SERVICE)
+
+url:  ## print the deployed service URL
+	@gcloud run services describe $(SERVICE) --project $(PROJECT) --region $(REGION) --format='value(status.url)'
+
+invoke:  ## classify a sample scan on the deployed service, with an IAM identity token
+	@curl -s -H "Authorization: Bearer $$(gcloud auth print-identity-token)" \
+	  -F "file=@assets/sample_stroke.png" "$$($(MAKE) -s url)/predict"
+
+logs:  ## tail the prediction log lines
+	gcloud beta run services logs tail $(SERVICE) --project $(PROJECT) --region $(REGION)
 
 clean:  ## remove caches
 	rm -rf .pytest_cache .ruff_cache **/__pycache__
