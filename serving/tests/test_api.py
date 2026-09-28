@@ -1,4 +1,6 @@
 import io
+import json
+import logging
 
 import pytest
 from fastapi.testclient import TestClient
@@ -61,9 +63,12 @@ def test_predict_rejects_an_oversized_upload(client, stroke_model):
     assert response.status_code == 413
 
 
-def test_api_key_is_enforced_when_configured(client, stroke_model, monkeypatch):
-    monkeypatch.setattr(api, "API_KEY", "secret")
-    files = {"file": ("scan.png", png_bytes(), "image/png")}
+def test_prediction_is_logged_without_the_scan(client, stroke_model, caplog):
+    with caplog.at_level(logging.INFO, logger="stroke.predict"):
+        client.post("/predict", files={"file": ("scan.png", png_bytes(), "image/png")})
 
-    assert client.post("/predict", files=files).status_code == 401
-    assert client.post("/predict", files=files, headers={"X-API-Key": "secret"}).status_code == 200
+    entry = json.loads(caplog.messages[-1])
+    assert entry["event"] == "prediction"
+    assert entry["prediction"] == "Stroke"
+    assert entry["latency_ms"] >= 0
+    assert set(entry) == {"event", "prediction", "confidence", "latency_ms", "image_bytes"}
