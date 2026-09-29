@@ -1,0 +1,56 @@
+# Tests the serving API on every PR that touches it; deploys it to Cloud Run on merge to main.
+name: Serving
+
+on:
+  pull_request:
+    paths: ["serving/**", ".github/workflows/deploy-serving.yml"]
+  push:
+    branches: [main]
+    paths: ["serving/**", ".github/workflows/deploy-serving.yml"]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: serving
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest -q
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # Two merges in a row deploy one after the other, never in parallel.
+    concurrency:
+      group: deploy-serving
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write # lets the job request the GitHub OIDC token that WIF exchanges
+    steps:
+      - uses: actions/checkout@v4
+
+      # No key stored anywhere: the OIDC token is exchanged for short-lived github-deployer credentials.
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/640892952136/locations/global/workloadIdentityPools/github/providers/stroke-repo
+          service_account: github-deployer@stoke-serving.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # Same build as `make release`: image tagged with the commit it was built from.
+      - run: |
+          gcloud builds submit . --config cloudbuild.yaml --project stoke-serving \
+            --substitutions=_TAG=$(git rev-parse --short HEAD),_REGION=europe-west1,_SERVICE=stroke-api
