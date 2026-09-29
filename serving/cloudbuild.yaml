@@ -1,0 +1,55 @@
+# Builds, pushes and deploys the serving image. Run with `make release`.
+# BuildKit must stay on: the Dockerfile uses a uv cache mount.
+
+substitutions:
+  _REGION: europe-west1
+  _REPOSITORY: stroke-api
+  _IMAGE: stroke-api
+  _SERVICE: stroke-api
+  _TAG: latest
+
+options:
+  env:
+    - DOCKER_BUILDKIT=1
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:${_TAG}
+      - --tag
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:latest
+      - .
+
+  # Pushed here rather than through `images:`, which only runs after every step — the deploy
+  # below needs the tag to already exist in the registry.
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:${_TAG}
+      - --region=${_REGION}
+      # Callers are authenticated by Cloud Run itself, before the request reaches the container:
+      # every caller needs roles/run.invoker and a Google-signed identity token.
+      - --no-allow-unauthenticated
+      - --port=8080
+      # Inference is CPU-bound and single-threaded; the default of 80 would queue on one core.
+      - --concurrency=8
+      - --cpu=1
+      - --memory=1Gi
+      - --cpu-boost
+      - --min-instances=0
+      - --max-instances=3

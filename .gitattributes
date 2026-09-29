@@ -3,3 +3,4 @@
 Dockerfile text eol=lf
 .dockerignore text eol=lf
 .gcloudignore text eol=lf
+Makefile text eol=lf
